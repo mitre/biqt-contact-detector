@@ -1,0 +1,7 @@
+numpy
+tensorflow-probability==0.11.1
+tensorflow_cpu==2.3.1
+pillow
+scipy
+scikit-image
+pybind11[global]

@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  biqt_contactlens_detection_trainer:
+    image: biqt_contactlens_detection_trainer
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: biqt_contactlens_detection_trainer
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+    network_mode: "host"
+    volumes:
+      - "../../..:/biqt-contact-detector"
+    working_dir: /biqt-contact-detector/src/python/training
+    command: ["bash"]
