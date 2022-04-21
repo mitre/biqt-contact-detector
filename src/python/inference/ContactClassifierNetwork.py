@@ -33,7 +33,7 @@ from cv_features.tf_features import fft_features_np_func
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 class ContactClassifierNetwork:
-	def __init__(self, model_path=None, color_mode='grayscale',  resnet_preprocess=False, img_target_size=(640, 640),
+	def __init__(self, model_path=None, color_mode='rgb',  resnet_preprocess=False, img_target_size=(456,456),
 				 batch_size=16, positive_indx=0):
 		"""
 
@@ -47,7 +47,6 @@ class ContactClassifierNetwork:
 		:param positive_indx: Index in model prediction vector corresponding to "positive"
 		"""
 		assert model_path is not None, "Please provide a path to the contact classifier network model"
-
 		self.model = None
 		self.color_mode = color_mode
 		self.resnet_preprocess = resnet_preprocess

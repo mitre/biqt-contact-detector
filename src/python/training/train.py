@@ -154,18 +154,18 @@ if __name__ == "__main__":
     if args.model in ["SoftLensNetwork"]:
         model = networks.SoftLensNetwork(img_shape=img_shape, num_features=num_features, pretrain_weights=pretrain_weights, freeze_pretrained=args.freeze_pretrained)
     elif args.model in ["CosmeticLensNetwork"]:
-        model = networks.CosmeticLensNetwork(img_shape=img_shape, num_features=num_features)
+        model = networks.CosmeticLensNetwork(img_shape=img_shape, num_features=num_features, pretrain_weights=pretrain_weights, freeze_pretrained=args.freeze_pretrained)
     else:
         raise ValueError(f"`model` unknown {args.model}")
-
-    print(f"Using model {args.model}")
-    model.summary()
 
     if args.prev_checkpoint is not None:
         model = load_model(args.prev_checkpoint)
         print("Loaded model from " + args.prev_checkpoint)
     else:
         print("No previous checkpoint provided - training from scratch")
+
+    print(f"Using model {args.model}")
+    model.summary()
     # ------------------------------------------------------------------------------
     # -- Compile model
     # ------------------------------------------------------------------------------
@@ -277,7 +277,6 @@ if __name__ == "__main__":
     stats.print_confusion_matrix(y_classes, yhat_classes, labels=class_labels)
 
     print('Classification Report')
-    # hopefully target_names come back in the correct order all the time {'Cosmetic': 0, 'No': 1, 'Yes': 2}
     print(classification_report(y_classes, yhat_classes, target_names=class_labels))
 
     print(f"Accuracy Score {accuracy_score(y_classes, yhat_classes) * 100}%")

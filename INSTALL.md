@@ -21,6 +21,7 @@ This provider also relies on python 3.7. The source can be obtained via https://
 
 ```
 yum install gcc openssl-devel bzip2-devel libffi-devel zlib-devel wget -y
+mkdir /usr/src 
 cd /usr/src
 wget https://www.python.org/ftp/python/3.7.9/Python-3.7.9.tgz
 tar xzf Python-3.7.9.tgz

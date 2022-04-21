@@ -12,7 +12,7 @@ cmake_minimum_required(VERSION 3.1)
 project(BIQTContactDetector)
 set(CMAKE_CXX_STANDARD 11)
 
-OPTION(BUILD_SHARED_LIBS "Builds shared libraries for certain dependencies. Recommended: ON" ON)
+OPTION(BUILD_SHARED_LIBS "Builds shared libraries for certain dependencies. Recommended: ON"  ON)
 OPTION(BUILD_STATIC_LIBS "Builds static libraries for certain dependencies. Recommended: OFF" OFF)
 
 if(WIN32)
@@ -62,57 +62,37 @@ include_directories(. "include" ${BIQT_HOME}/include ${BIQT_HOME}/../../include 
 # Create the provider library 
 file(GLOB SOURCE_FILES "src/cxx/*.cpp")
 
-# Model Variables
-set(COSMETIC_LENS_MODEL_FILE "binary-cosmetic-contact-lens-model.hdf5")
-set(COSMETIC_LENS_MODEL_DEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/config/models")
-set(COSMETIC_LENS_MODEL_DEST_FILE "${COSMETIC_LENS_MODEL_DEST_DIR}/${COSMETIC_LENS_MODEL_FILE}")
-set(LOCAL_COSMETIC_LENS_MODEL_FILE ${COSMETIC_LENS_MODEL_DEST_FILE} CACHE FILEPATH "Location of local cosmetic contact lens model.")
-
-# Check if model files already exist locally. If not, turn on download models
-if(NOT EXISTS ${LOCAL_COSMETIC_LENS_MODEL_FILE})
-	set(DOWNLOAD_MODELS ON CACHE BOOL "Download models from remote repo.")
-else()
-	set(DOWNLOAD_MODELS OFF CACHE BOOL "Download models from remote repo.")
-endif()
-
-# Handle model file installation
+# Determine if the cosmetic file named COSMETIC_LENS_MODEL_FILE has already been retrieved and placed into the source directory. If it hasn't,
+# retrieve it from the web.
+#   LOCAL_COSMETIC_LENS_MODEL_PATH        The path to a model file that should be installed.
+#   TARGET_COSMETIC_LENS_MODEL_FILE_NAME  The name of the model expected by the provider (e.g., binary-cosmetic-contact-lens-model.hdf5).
+#   TARGET_COSMETIC_LENS_MODEL_PATH       The expected location of the model file within the source tree.
+#   TARGET_COSMETIC_LENS_MODEL_FILE_PATH  The combination of the TARGET_COSMETIC_LENS_MODEL_PATH and TARGET_COSMETIC_LENS_MODEL_FILE_NAME.
+set(TARGET_COSMETIC_LENS_MODEL_FILE_NAME "binary-cosmetic-contact-lens-model.hdf5")
+set(TARGET_COSMETIC_LENS_MODEL_PATH      "${CMAKE_CURRENT_SOURCE_DIR}/config/models/")
+set(TARGET_COSMETIC_LENS_MODEL_FILE_PATH "${TARGET_COSMETIC_LENS_MODEL_PATH}/${TARGET_COSMETIC_LENS_MODEL_FILE_NAME}")
+set(LOCAL_COSMETIC_LENS_MODEL_PATH       "${TARGET_COSMETIC_LENS_MODEL_FILE_PATH}" CACHE FILEPATH "The path to a model file that should be installed.")
+set(DOWNLOAD_MODELS OFF CACHE BOOL "Force download of model.")
 if(DOWNLOAD_MODELS)
-	message(STATUS "Attempting to download model files...")
-	set(COSMETIC_LENS_MODEL_URL "https://github.com/mitre/biqt-contact-detector/releases/download/v0.1/${COSMETIC_LENS_MODEL_FILE}")
-	file(DOWNLOAD "${COSMETIC_LENS_MODEL_URL}" "${CMAKE_CURRENT_SOURCE_DIR}/config/models/${COSMETIC_LENS_MODEL_FILE}" SHOW_PROGRESS STATUS DOWNLOAD_STATUS_COSMETIC_MODEL)
-	list(GET DOWNLOAD_STATUS_COSMETIC_MODEL 0 DOWNLOAD_FAILED)
-	message(STATUS "${DOWNLOAD_FAILED} ${DOWNLOAD_STATUS_COSMETIC_MODEL}")
-	if(DOWNLOAD_FAILED)
-		message(FATAL_ERROR "Download ${COSMETIC_LENS_MODEL_FILE} failed with response: ${DOWNLOAD_STATUS_COSMETIC_MODEL}!")
-	endif()
+	message(STATUS "Models will be downloaded (forced).")
+elseif(EXISTS "${LOCAL_COSMETIC_LENS_MODEL_PATH}")
+	message(STATUS "Found a local cosmetic lens model at ${LOCAL_COSMETIC_LENS_MODEL_PATH}.")
+	configure_file("${LOCAL_COSMETIC_LENS_MODEL_PATH}" "${TARGET_COSMETIC_LENS_MODEL_FILE_PATH}" COPYONLY)
 else()
-	message(STATUS "Attempting to use local model files...")
-	if(NOT LOCAL_COSMETIC_LENS_MODEL_FILE)
-		message(FATAL_ERROR "Must provide a value for LOCAL_COSMETIC_LENS_MODEL_FILE if DOWNLOAD_MODELS is not on. Provide it using -DLOCAL_COSMETIC_LENS_MODEL_FILE")
-	endif()
-
-# Soft Lens (NYI)
-#	if(EXISTS ${LOCAL_SOFT_LENS_MODEL_FILE})
-#		if(NOT LOCAL_SOFT_LENS_MODEL_FILE EQUAL SOFT_LENS_MODEL_DEST_FILE)
-#			file(COPY ${LOCAL_SOFT_LENS_MODEL_FILE} DESTINATION ${SOFT_LENS_MODEL_DEST_DIR})
-#		endif()
-#	endif()
-
-	if(EXISTS ${LOCAL_COSMETIC_LENS_MODEL_FILE})
-		if(NOT LOCAL_COSMETIC_LENS_MODEL_FILE EQUAL COSMETIC_LENS_MODEL_DEST_FILE)
-			file(COPY ${LOCAL_COSMETIC_LENS_MODEL_FILE} DESTINATION ${COSMETIC_LENS_MODEL_DEST_DIR})
-		endif()
-	else()
-		message(FATAL_ERROR "LOCAL_COSMETIC_LENS_MODEL_FILE ${LOCAL_COSMETIC_LENS_MODEL_FILE} does not exist. A cosmetic lens model must be provided.")
-	endif()
+	message(STATUS "A local cosmetic lens model could not be found. It will be downloaded.")
+	set(DOWNLOAD_MODELS ON)
 endif()
 
-if(EXISTS ${LOCAL_COSMETIC_LENS_MODEL_FILE})
-	message(STATUS "Detected local cosmetic lens model ${LOCAL_COSMETIC_LENS_MODEL_FILE}")
+if(DOWNLOAD_MODELS)
+	set(REMOTE_COSMETIC_MODEL_URL "https://github.com/mitre/biqt-contact-detector/releases/download/v0.2/weights-EfficientNetB5-public-binary-cosmetic.hdf5")
+	file(DOWNLOAD "${REMOTE_COSMETIC_MODEL_URL}" "${TARGET_COSMETIC_LENS_MODEL_FILE_PATH}" SHOW_PROGRESS STATUS DOWNLOAD_STATUS_COSMETIC_MODEL)
+	list(GET DOWNLOAD_STATUS_COSMETIC_MODEL 0 DOWNLOAD_FAILED)
+	if(DOWNLOAD_FAILED)
+		message(FATAL_ERROR "Download ${REMOTE_COSMETIC_MODEL_URL} failed with response: ${DOWNLOAD_STATUS_COSMETIC_MODEL}!")
+	endif()
 endif()
 
 add_compile_definitions(IS_DUAL_NETWORK=false)
-
 add_library(BIQTContactDetector SHARED ${SOURCE_FILES} ${EXTRA_FILES})
 
 target_link_libraries(BIQTContactDetector ${JSONCPP} ${BIQTAPI} pybind11::embed ${Python3_LIBRARIES} dl)

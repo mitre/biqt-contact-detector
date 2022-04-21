@@ -22,8 +22,8 @@ The provider exposes the following attributes described in [descriptor.json](des
 The original models were trained on a combination of the Notre Dame [ND Cosmetic Contact Lenses 2013 Data Set (NDCLD13)](https://cvrl.nd.edu/projects/data/#nd-cosmetic-contact-lenses-2013-data-set) and [The Notre Dame Contact Lense Dataset 2015 (NDCLD15)](https://cvrl.nd.edu/projects/data/#the-notre-dame-contact-lense-dataset-2015ndcld15) 
 datasets using an Nvidia V100 GPU. 
 
-[This document](src/python/training/README.md) describes the process for training new models or enhancing existing ones (e.g., training
-with additional data). 
+NOTE: The included cosmetic lens model was trained on a limited number of individuals with cosmetic lenses and should be treated only as an example. It should perform well on data similar to the Notre Dame contact lens datasets used for training, but it may not perform well on data captured with different image sensors. 
+The [training README](src/python/training/README.md) provides the instructions for creating or extending models using additional imagery.
 
 ### Soft Lens Model ###
 
