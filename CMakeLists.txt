@@ -8,7 +8,7 @@
 # Copyright 2020 The MITRE Corporation. All Rights Reserved.
 # ####################################################################### 
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.22)
 project(BIQTContactDetector)
 set(CMAKE_CXX_STANDARD 11)
 
@@ -26,8 +26,8 @@ if(DEFINED ENV{BIQT_HOME})
 	if(BIQT_HOME)
 		message(WARNING "Both -DBIQT_HOME and a BIQT_HOME environment variable are defined. Using -DBIQT_HOME (${BIQT_HOME}).")
 	else()
-	  set(BIQT_HOME "$ENV{BIQT_HOME}")
-  endif()  
+	  	set(BIQT_HOME "$ENV{BIQT_HOME}")
+  	endif()  
 endif()
 
 if(NOT BIQT_HOME)
@@ -43,12 +43,8 @@ endif()
 
 set(CMAKE_INSTALL_PREFIX "${BIQT_HOME}/providers")
 
-find_library(JSONCPP NAMES libjsoncpp jsoncpp HINTS ${BIQT_HOME}/lib ${BIQT_HOME}/lib64 ${BIQT_HOME}/bin ${BIQT_HOME}/../../lib ${BIQT_HOME}/../../lib64 ${BIQT_HOME}/../../bin)
+find_package(jsoncpp REQUIRED)
 find_library(BIQTAPI NAMES libbiqtapi biqtapi HINTS ${BIQT_HOME}/lib ${BIQT_HOME}/lib64 ${BIQT_HOME}/bin ${BIQT_HOME}/../../lib ${BIQT_HOME}/../../lib64 ${BIQT_HOME}/../../bin)
-
-if(NOT JSONCPP)
-	message(FATAL_ERROR "Failed to find library: jsoncpp.")
-endif()
 
 if(NOT BIQTAPI)
 	message(FATAL_ERROR "Failed to find library: biqtapi.")
@@ -95,7 +91,7 @@ endif()
 add_compile_definitions(IS_DUAL_NETWORK=false)
 add_library(BIQTContactDetector SHARED ${SOURCE_FILES} ${EXTRA_FILES})
 
-target_link_libraries(BIQTContactDetector ${JSONCPP} ${BIQTAPI} pybind11::embed ${Python3_LIBRARIES} dl)
+target_link_libraries(BIQTContactDetector jsoncpp_lib ${BIQTAPI} pybind11::embed ${Python3_LIBRARIES} dl)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/descriptor.json DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/config DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
