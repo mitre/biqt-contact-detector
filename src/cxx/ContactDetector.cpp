@@ -11,6 +11,13 @@ ContactDetector::ContactDetector(const std::string &module_file,
                                  const std::string &cosmetic_model_path,
                                  const std::string &soft_lens_model_path)
 {
+    // Load python library so numpy can find symbols. See
+    // https://stackoverflow.com/questions/49784583/numpy-import-fails-on-multiarray-extension-library-when-called-from-embedded-pyt
+    void *libpython_handle = dlopen("libpython3.10.so", RTLD_GLOBAL | RTLD_LAZY);
+    if(!libpython_handle){
+        throw std::runtime_error("Error loading python library libpython3.10.so");
+    }
+
     if(!Py_IsInitialized()){
         py::initialize_interpreter();
     }
