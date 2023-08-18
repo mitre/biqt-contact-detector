@@ -51,7 +51,8 @@ if(NOT BIQTAPI)
 endif()
 
 find_package(Python3 REQUIRED COMPONENTS Development Interpreter)
-find_package(pybind11 REQUIRED)
+# Add a PATHS hint for pyenv.
+find_package(pybind11 REQUIRED PATHS ${Python3_EXECUTABLE}/../../versions/${Python3_VERSION}/share/cmake)
 
 include_directories(. "include" ${BIQT_HOME}/include ${BIQT_HOME}/../../include ${Python3_INCLUDE_DIRS})
 
