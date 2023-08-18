@@ -13,9 +13,9 @@ ContactDetector::ContactDetector(const std::string &module_file,
 {
     // Load python library so numpy can find symbols. See
     // https://stackoverflow.com/questions/49784583/numpy-import-fails-on-multiarray-extension-library-when-called-from-embedded-pyt
-    void *libpython_handle = dlopen("libpython3.7m.so", RTLD_GLOBAL | RTLD_LAZY);
+    void *libpython_handle = dlopen("libpython3.so", RTLD_GLOBAL | RTLD_LAZY);
     if(!libpython_handle){
-        throw std::runtime_error("Error loading python library libpython3.7m.so");
+        throw std::runtime_error("Error loading python library libpython3.so");
     }
 
     if(!Py_IsInitialized()){
