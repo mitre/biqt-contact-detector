@@ -32,7 +32,7 @@ Download the python dependencies.
 pip install -r requirements.txt
 ```
 
-Finally, build and install the provider.
+Finally, build and install the provider. Set BIQT_HOME via environment variable or using -DBIQT_HOME in cmake command below.
 
 ```
 mkdir build
