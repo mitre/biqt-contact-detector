@@ -92,6 +92,13 @@ endif()
 add_compile_definitions(IS_DUAL_NETWORK=false)
 add_library(BIQTContactDetector SHARED ${SOURCE_FILES} ${EXTRA_FILES})
 
+<<<<<<< HEAD
+=======
+# numpy likes to have the libpython3 library loaded when being called from cxx.
+get_filename_component(PYLIB_NAME "${Python3_LIBRARY_RELEASE}" NAME)
+add_definitions(-DPYTHON_LIB="${PYLIB_NAME}")
+
+>>>>>>> ubuntu-inference
 target_link_libraries(BIQTContactDetector jsoncpp_lib ${BIQTAPI} pybind11::embed ${Python3_LIBRARIES} dl)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/descriptor.json DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

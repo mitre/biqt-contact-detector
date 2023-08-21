@@ -1,6 +1,6 @@
 numpy
 tensorflow-probability
-tensorflow_cpu
+tensorflow
 pillow
 scipy
 scikit-image
