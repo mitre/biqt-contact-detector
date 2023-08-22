@@ -8,7 +8,7 @@
 # Copyright 2020 The MITRE Corporation. All Rights Reserved.
 # ####################################################################### 
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.22)
 project(BIQTContactDetector)
 set(CMAKE_CXX_STANDARD 11)
 
@@ -26,8 +26,8 @@ if(DEFINED ENV{BIQT_HOME})
 	if(BIQT_HOME)
 		message(WARNING "Both -DBIQT_HOME and a BIQT_HOME environment variable are defined. Using -DBIQT_HOME (${BIQT_HOME}).")
 	else()
-	  set(BIQT_HOME "$ENV{BIQT_HOME}")
-  endif()  
+	  	set(BIQT_HOME "$ENV{BIQT_HOME}")
+  	endif()  
 endif()
 
 if(NOT BIQT_HOME)
@@ -43,19 +43,16 @@ endif()
 
 set(CMAKE_INSTALL_PREFIX "${BIQT_HOME}/providers")
 
-find_library(JSONCPP NAMES libjsoncpp jsoncpp HINTS ${BIQT_HOME}/lib ${BIQT_HOME}/lib64 ${BIQT_HOME}/bin ${BIQT_HOME}/../../lib ${BIQT_HOME}/../../lib64 ${BIQT_HOME}/../../bin)
+find_package(jsoncpp REQUIRED)
 find_library(BIQTAPI NAMES libbiqtapi biqtapi HINTS ${BIQT_HOME}/lib ${BIQT_HOME}/lib64 ${BIQT_HOME}/bin ${BIQT_HOME}/../../lib ${BIQT_HOME}/../../lib64 ${BIQT_HOME}/../../bin)
-
-if(NOT JSONCPP)
-	message(FATAL_ERROR "Failed to find library: jsoncpp.")
-endif()
 
 if(NOT BIQTAPI)
 	message(FATAL_ERROR "Failed to find library: biqtapi.")
 endif()
 
 find_package(Python3 REQUIRED COMPONENTS Development Interpreter)
-find_package(pybind11 REQUIRED)
+# Add a PATHS hint for pyenv.
+find_package(pybind11 REQUIRED PATHS ${Python3_EXECUTABLE}/../../versions/${Python3_VERSION}/share/cmake)
 
 include_directories(. "include" ${BIQT_HOME}/include ${BIQT_HOME}/../../include ${Python3_INCLUDE_DIRS})
 
@@ -84,7 +81,7 @@ else()
 endif()
 
 if(DOWNLOAD_MODELS)
-	set(REMOTE_COSMETIC_MODEL_URL "https://github.com/mitre/biqt-contact-detector/releases/download/v0.2/weights-EfficientNetB5-public-binary-cosmetic.hdf5")
+	set(REMOTE_COSMETIC_MODEL_URL "https://github.com/mitre/biqt-contact-detector/releases/download/v23.04/efficientnet-b5-CosmeticLensNetwork.hdf5")
 	file(DOWNLOAD "${REMOTE_COSMETIC_MODEL_URL}" "${TARGET_COSMETIC_LENS_MODEL_FILE_PATH}" SHOW_PROGRESS STATUS DOWNLOAD_STATUS_COSMETIC_MODEL)
 	list(GET DOWNLOAD_STATUS_COSMETIC_MODEL 0 DOWNLOAD_FAILED)
 	if(DOWNLOAD_FAILED)
@@ -95,7 +92,10 @@ endif()
 add_compile_definitions(IS_DUAL_NETWORK=false)
 add_library(BIQTContactDetector SHARED ${SOURCE_FILES} ${EXTRA_FILES})
 
-target_link_libraries(BIQTContactDetector ${JSONCPP} ${BIQTAPI} pybind11::embed ${Python3_LIBRARIES} dl)
+# numpy likes to have the libpython3 library loaded when being called from cxx.
+get_filename_component(PYLIB_NAME "${Python3_LIBRARY_RELEASE}" NAME)
+add_definitions(-DPYTHON_LIB="${PYLIB_NAME}")
+target_link_libraries(BIQTContactDetector jsoncpp_lib ${BIQTAPI} pybind11::embed ${Python3_LIBRARIES} dl)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/descriptor.json DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/config DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

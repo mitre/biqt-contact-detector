@@ -12,7 +12,6 @@ from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array
 from tensorflow.keras.preprocessing.image import load_img as load_img_tf
 from tensorflow.keras.layers import Input
-from tensorflow.keras.applications.resnet50 import preprocess_input
 import logging
 
 import sys
@@ -27,32 +26,44 @@ from PIL import Image
 # es.tf_features is not loaded, but a Lambda layer uses it. It may cause errors.
 from cv_features.tf_features import bsif_features
 from cv_features.tf_features import fft_features_np_func
+import dataset_utils
 
 # Suppress tensorflow INFO and WARNING messages
 # Source: https://stackoverflow.com/questions/35911252/disable-tensorflow-debugging-information
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 class ContactClassifierNetwork:
-	def __init__(self, model_path=None, color_mode='rgb',  resnet_preprocess=False, img_target_size=(456,456),
-				 batch_size=16, positive_indx=0):
+	def __init__(self, model_path=None, color_mode='rgb', preprocess_method='EfficientNet',
+				 img_target_size=(456, 456), batch_size=16, positive_indx=0, crop_center=False):
 		"""
 
 		:param model_path: Path to keras model
 		:param color_mode: 'grayscale', 'rgb', 'rgba', default=grayscale. Used with tensorflow.keras load_img method
-		:param resnet_preprocess: Whether to apply resnet preprocessing to image before inference. If false, divide
-									image by 255 before inference
+		:param preprocess_method: Must be one of ['ResNet', 'EfficientNet'] or None. If none, divide the image by 255 for inference. 
 		:param img_target_size: Size images will be rescaled to before feeding through network
 		:param batch_size: Split images into groups of batch_size to feed into the network at once.
 							The last batch processed may be smaller than batch_size
 		:param positive_indx: Index in model prediction vector corresponding to "positive"
+		:param crop_center: If true, crop center of the image to img_target_size to retain aspect ration. Otherwise resize with interpolation
 		"""
 		assert model_path is not None, "Please provide a path to the contact classifier network model"
+
+		if preprocess_method is not None:
+			assert preprocess_method in ['ResNet', 'EfficientNet']
+
 		self.model = None
 		self.color_mode = color_mode
-		self.resnet_preprocess = resnet_preprocess
+		self.preprocess_function = None
+		if preprocess_method == 'ResNet':
+			from tensorflow.keras.applications.resnet50 import preprocess_input
+			self.preprocess_function = preprocess_input
+		elif preprocess_method == 'EfficientNet':
+			from tensorflow.keras.applications.efficientnet import preprocess_input
+			self.preprocess_function = preprocess_input
 		self.img_target_size = img_target_size
 		self.batch_size = batch_size
 		self.positive_indx = positive_indx
+		self.crop_center = crop_center
 		self.logger = logging.getLogger('contactclassifier.ContactClassifierNetwork')
 
 		num_channels = 1
@@ -71,8 +82,8 @@ class ContactClassifierNetwork:
 
 	def add_model_preprocessing(self, model):
 		input = Input(shape=self.img_target_size)
-		if self.resnet_preprocess:
-			model_input = preprocess_input(input)
+		if self.preprocess_function is not None:
+			model_input = self.preprocess_function(input)
 		else:
 			model_input = input/255.0
 		model_output = model(model_input)
@@ -96,9 +107,12 @@ class ContactClassifierNetwork:
 		num_imgs = len(img_paths)
 		img_batch = np.zeros((num_imgs, self.img_target_size[0], self.img_target_size[1], self.img_target_size[2]))
 		for i in range(num_imgs):
-			img = self.load_img(img_paths[i])
-			if self.color_mode == 'grayscale':
-				img = np.expand_dims(img, -1)
+			if self.crop_center:
+				img = np.array(dataset_utils.load_img_center_crop(img_paths[i], color_mode=self.color_mode, crop_size=self.img_target_size[:2]))
+			else:
+				img = np.array(self.load_img(img_paths[i]))
+				if self.color_mode == 'grayscale':
+					img = np.expand_dims(img, -1)
 			img_batch[i] = img
 		return img_batch
 

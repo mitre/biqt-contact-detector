@@ -1,7 +1,7 @@
 {
   "name" : "BIQTContactDetector",
   "description": "Contact lens detection algorithm.",
-  "version" : "0.1",
+  "version" : "23.04",
   "sourceLanguage" : "python",
   "modality": "iris", 
 
@@ -9,12 +9,6 @@
     {
       "name": "cosmetic_contact_confidence",
       "description": "Confidence that given iris image has a cosmetic contact lens. A low value indicates either clear/soft lens or no lens",
-      "type": "DOUBLE",
-      "defaultValue": "0.0"
-    },
-    {
-      "name": "soft_lens_confidence",
-      "description": "Confidence that given iris image has a clear/soft contact lens. Use only if cosmetic_contact_confidence is low.",
       "type": "DOUBLE",
       "defaultValue": "0.0"
     }
