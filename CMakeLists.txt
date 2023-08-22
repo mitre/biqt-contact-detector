@@ -81,7 +81,7 @@ else()
 endif()
 
 if(DOWNLOAD_MODELS)
-	set(REMOTE_COSMETIC_MODEL_URL "https://github.com/mitre/biqt-contact-detector/releases/download/v0.2/weights-EfficientNetB5-public-binary-cosmetic.hdf5")
+	set(REMOTE_COSMETIC_MODEL_URL "https://github.com/mitre/biqt-contact-detector/releases/download/v23.04/efficientnet-b5-CosmeticLensNetwork.hdf5")
 	file(DOWNLOAD "${REMOTE_COSMETIC_MODEL_URL}" "${TARGET_COSMETIC_LENS_MODEL_FILE_PATH}" SHOW_PROGRESS STATUS DOWNLOAD_STATUS_COSMETIC_MODEL)
 	list(GET DOWNLOAD_STATUS_COSMETIC_MODEL 0 DOWNLOAD_FAILED)
 	if(DOWNLOAD_FAILED)
