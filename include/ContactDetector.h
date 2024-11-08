@@ -11,17 +11,14 @@ public:
                     const std::string &module_name, 
                     const std::string &module_object,
                     const std::string &eval_method,
-                    const std::string &cosmetic_model_path,
-                    const std::string &soft_lens_model_path=std::string());
+                    const std::string &cosmetic_model_path);
 
     ~ContactDetector();
-    std::vector<double> evaluate(const std::string &file);
-    bool is_dual();
+    double evaluate(const std::string &file);
 
 
 private:
     py::function m_eval_func;
-    bool m_is_dual;
 
 };
 

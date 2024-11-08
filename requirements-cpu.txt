@@ -1,3 +1,4 @@
 pybind11[global]==2.12
+torch==2.3
 torchvision==0.18
 pytorch_lightning==2.2

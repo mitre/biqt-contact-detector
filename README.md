@@ -15,45 +15,12 @@ open source [Biometric Image Quality Toolkit Framework](https://github.com/mitre
 The provider exposes the following attributes described in [descriptor.json](descriptor.json).
 
   * `cosmetic_contact_confidence` - A score in the range `[0,1]` indicating the predicted absence or presence (respectively) of a cosmetic lens in the image.
-  * `soft_lens_confidence` (disabled by default) - A score in the range `[0,1]` indicating the predicted absence or presence (respectively) of a soft contact lens in the image.
 
 ### Models ###
 
-The original models were trained on a combination of the Notre Dame [ND Cosmetic Contact Lenses 2013 Data Set (NDCLD13)](https://cvrl.nd.edu/projects/data/#nd-cosmetic-contact-lenses-2013-data-set) and [The Notre Dame Contact Lense Dataset 2015 (NDCLD15)](https://cvrl.nd.edu/projects/data/#the-notre-dame-contact-lense-dataset-2015ndcld15) 
-datasets using an Nvidia V100 GPU. 
+The model was trained on a combination of the Notre Dame [ND Cosmetic Contact Lenses 2013 Data Set (NDCLD13)](https://cvrl.nd.edu/projects/data/#nd-cosmetic-contact-lenses-2013-data-set) and [The Notre Dame Contact Lense Dataset 2015 (NDCLD15)](https://cvrl.nd.edu/projects/data/#the-notre-dame-contact-lense-dataset-2015ndcld15) datasets.
 
 NOTE: The included cosmetic lens model was trained on a limited number of individuals with cosmetic lenses and should be treated only as an example. It should perform well on data similar to the Notre Dame contact lens datasets used for training, but it may not perform well on data captured with different image sensors. 
-The [training README](src/python/training/README.md) provides the instructions for creating or extending models using additional imagery.
-
-### Soft Lens Model ###
-
-The soft lens model is not included in this release and is disabled by default. If you want to enabled soft lens predictions, follow these steps:
-1. Train a soft lens model following the instructions for training as described in [src/python/training/README.md] 
-2. Copy the soft lens model hdf5 file to ```config/models/binary-clear-soft-contact-lens-model.hdf5```
-3. When compiling via cmake, set the cache variable DUAL_NETWORK to "ON". E.g,: 
-  ```
-  cmake3 -DDUAL_NETWORK=ON ..
-  ```
-  There should be an indication in the cmake output that dual network (soft-lens + cosmetic-lens) model is enabled:
-  ```
-  -- Attempting to use local model files...
--- Detected local soft lens model /biqt-contact/config/models/binary-clear-soft-contact-lens-model.hdf5
--- Detected local cosmetic lens model /biqt-contact/config/models/binary-cosmetic-contact-lens-model.hdf5
--- Compiling with dual network enabled. <------
--- Configuring done
--- Generating done
--- Build files have been written to: /biqt-contact/build
-  ```
-
-The BIQTContactDetector should now output both cosmetic_contact_confidence and soft_lens_confidence:
-```
-[root@8a44d221c5dc biqt-contact]# biqt -p BIQTContactDetector data/example.tiff
-Provider,Image,Detection,AttributeType,Key,Value
-BIQTContactDetector,data/example.tiff,1,Metric,cosmetic_contact_confidence,6.98724e-07
-BIQTContactDetector,data/example.tiff,1,Metric,soft_lens_confidence,1
-```
-  
-
 
 ### Acknowledgments ###
 
