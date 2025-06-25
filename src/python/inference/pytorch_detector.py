@@ -1,7 +1,15 @@
+'''
+NOTICE
+
+This software (or technical data) was produced for the U. S. Government under contract, and is subject to the Rights in Data-General Clause 52.227-14, Alt. IV (DEC 2007) 
+
+(C) 2024 The MITRE Corporation. All Rights Reserved.
+'''
+
 import os
 import sys
 
-from PIL import Image
+from PIL import Image, ImageOps
 
 import torch
 from torchvision import transforms as T

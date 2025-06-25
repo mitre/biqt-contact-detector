@@ -1,3 +1,10 @@
+> NOTICE
+> 
+> This software (or technical data) was produced for the U. S. Government under contract, and is subject to the Rights in Data-General Clause 52.227-14, Alt. IV (DEC 2007)
+> 
+> (C) 2021 The MITRE Corporation. All Rights Reserved.
+> Approved for Public Release; Distribution Unlimited. Public Release Case Number 18-0812.
+
 # Windows
 
 Windows is not a supported build target for this provider.
