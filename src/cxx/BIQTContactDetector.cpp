@@ -16,7 +16,7 @@ bool file_openable(std::string filename){
     return static_cast<bool>(std::ifstream(filename));
 }
 
-BIQTContactDetector::BIQTContactDetector(bool is_dual)
+BIQTContactDetector::BIQTContactDetector()
 {
     // Initialize metadata
     std::string biqt_home = getenv("BIQT_HOME");
@@ -26,38 +26,22 @@ BIQTContactDetector::BIQTContactDetector(bool is_dual)
     desc_file >> DescriptorObject;
 
     // Instantiate model
-    std::string cosmetic_model_path = biqt_home + "/providers/BIQTContactDetector/config/models/binary-cosmetic-contact-lens-model.hdf5";
-    std::string soft_lens_model_path = biqt_home + "/providers/BIQTContactDetector/config/models/binary-clear-soft-contact-lens-model.hdf5";
+    std::string cosmetic_model_path = biqt_home + "/providers/BIQTContactDetector/config/models/efficientnet-v2l-CDM.ckpt";
     
     if(!file_openable(cosmetic_model_path)){
         throw std::runtime_error("\nERROR: Cosmetic model file '" + cosmetic_model_path + "' could not be opened (does it exist?). Cosmetic model is needed to use this component.");
-    }else if(is_dual && !file_openable(soft_lens_model_path)){
-        std::cerr << "\nWARNING: Cosmetic model was found but soft lens model " << soft_lens_model_path << " could not be opened (does it exist?). Defaulting to cosmetic only model." << std::endl;
-        is_dual = false;
     }
     
     try{
-        if(is_dual){
-            std::string dualContactClassifierNetwork_module_file = biqt_home + "/providers/BIQTContactDetector/src/python/inference/DualContactClassifierNetwork.py";
-            std::string dualContactClassifierNetwork_module_name = "DualContactClassifierNetwork";
-            std::string dualContactClassifierNetwork_module_object = "DualContactClassifierNetwork";
-            std::string dualContactClassifierNetwork_eval_method = "processFile";    
-            m_contact_detector = std::unique_ptr<ContactDetector>(new ContactDetector(dualContactClassifierNetwork_module_file, 
-                                                                                      dualContactClassifierNetwork_module_name, 
-                                                                                      dualContactClassifierNetwork_module_object, 
-                                                                                      dualContactClassifierNetwork_eval_method, 
-                                                                                      cosmetic_model_path, soft_lens_model_path));
-        }else{
-            std::string contactClassifierNetwork_module_file = biqt_home + "/providers/BIQTContactDetector/src/python/inference/ContactClassifierNetwork.py";
-            std::string contactClassifierNetwork_module_name = "ContactClassifierNetwork";
-            std::string contactClassifierNetwork_module_object = "ContactClassifierNetwork";
-            std::string contactClassifierNetwork_eval_method = "processFile";
-            m_contact_detector = std::unique_ptr<ContactDetector>(new ContactDetector(contactClassifierNetwork_module_file, 
-                                                                                      contactClassifierNetwork_module_name, 
-                                                                                      contactClassifierNetwork_module_object, 
-                                                                                      contactClassifierNetwork_eval_method,
-                                                                                      cosmetic_model_path));
-        }
+        std::string contactClassifierNetwork_module_file = biqt_home + "/providers/BIQTContactDetector/src/python/inference/pytorch_detector.py";
+        std::string contactClassifierNetwork_module_name = "pytorch_detector";
+        std::string contactClassifierNetwork_module_object = "IrisDetection";
+        std::string contactClassifierNetwork_eval_method = "infer";
+        m_contact_detector = std::unique_ptr<ContactDetector>(new ContactDetector(contactClassifierNetwork_module_file, 
+                                                                                    contactClassifierNetwork_module_name, 
+                                                                                    contactClassifierNetwork_module_object, 
+                                                                                    contactClassifierNetwork_eval_method,
+                                                                                    cosmetic_model_path));
     }catch(std::exception &e){
         std::cerr << e.what() << std::endl;
         throw e;
@@ -79,34 +63,16 @@ Provider::EvaluationResult BIQTContactDetector::evaluate(const std::string &file
     evalResult.errorCode = 0;
     evalResult.provider = "BIQTContactDetector";
 
-    if(m_contact_detector->is_dual()){
-        try{
-            std::vector<double> confidence = m_contact_detector->evaluate(file);
-            double cosmetic_contact_confidence = confidence[0];
-            double soft_lens_confidence = confidence[1];
-            
-            qualityResult.metrics["cosmetic_contact_confidence"] = cosmetic_contact_confidence;
-            qualityResult.metrics["soft_lens_confidence"] = soft_lens_confidence;
-            evalResult.qualityResult.push_back(std::move(qualityResult));
-
-        }catch(std::exception &e){
-            evalResult.message = e.what();
-            evalResult.errorCode = 1;
-            std::cerr << e.what() << std::endl;
-        }
-
-    }else{
-        try{
-            double cosmetic_contact_confidence = m_contact_detector->evaluate(file)[0];
-            
-            qualityResult.metrics["cosmetic_contact_confidence"] = cosmetic_contact_confidence;
-            evalResult.qualityResult.push_back(std::move(qualityResult));
-        }catch(std::exception &e){
-            evalResult.message = e.what();
-            evalResult.errorCode = 1;
-            std::cerr << e.what() << std::endl;
-        }
-    }    
+    try{
+        double cosmetic_contact_confidence = m_contact_detector->evaluate(file);
+        
+        qualityResult.metrics["cosmetic_contact_confidence"] = cosmetic_contact_confidence;
+        evalResult.qualityResult.push_back(std::move(qualityResult));
+    }catch(std::exception &e){
+        evalResult.message = e.what();
+        evalResult.errorCode = 1;
+        std::cerr << e.what() << std::endl;
+    }
     
     return evalResult;
 }

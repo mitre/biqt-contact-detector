@@ -1,7 +1,7 @@
 {
   "name" : "BIQTContactDetector",
   "description": "Contact lens detection algorithm.",
-  "version" : "23.04",
+  "version" : "24.11",
   "sourceLanguage" : "python",
   "modality": "iris", 
 

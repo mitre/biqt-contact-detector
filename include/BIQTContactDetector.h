@@ -22,8 +22,7 @@
 class BIQTContactDetector : public Provider {
 
   public:
-    //IS_DUAL_NETWORK is a macro that will be set during compilation
-    BIQTContactDetector(bool is_dual=IS_DUAL_NETWORK);
+    BIQTContactDetector();
 	  ~BIQTContactDetector() override;
     Provider::EvaluationResult evaluate(const std::string &file) override;
 

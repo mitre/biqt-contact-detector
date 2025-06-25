@@ -1,3 +1,13 @@
+// #######################################################################
+// NOTICE
+//
+// This software (or technical data) was produced for the U.S. Government
+// under contract, and is subject to the Rights in Data-General Clause
+// 52.227-14, Alt. IV (DEC 2007).
+//
+// Copyright 2019 The MITRE Corporation. All Rights Reserved.
+// #######################################################################
+
 #include "ContactDetector.h"
 #include <pybind11/stl.h>
 #include <pybind11/embed.h>
@@ -11,8 +21,7 @@ ContactDetector::ContactDetector(const std::string &module_file,
                                  const std::string &module_name, 
                                  const std::string &module_object,
                                  const std::string &eval_method,
-                                 const std::string &cosmetic_model_path,
-                                 const std::string &soft_lens_model_path)
+                                 const std::string &cosmetic_model_path)
 {
     // Load python library so numpy can find symbols. See
     // https://stackoverflow.com/questions/49784583/numpy-import-fails-on-multiarray-extension-library-when-called-from-embedded-pyt
@@ -35,31 +44,17 @@ ContactDetector::ContactDetector(const std::string &module_file,
         throw std::invalid_argument("Object " + module_object + " from module " + module_name + " is not callable.");
     }
     
-    py::object model_obj;
-    if(soft_lens_model_path.empty()){
-        model_obj = ModelObj(cosmetic_model_path);
-        m_is_dual = false;
-    }else{
-        model_obj = ModelObj(cosmetic_model_path, soft_lens_model_path);
-        m_is_dual = true;
-    }
+    py::object model_obj = ModelObj(cosmetic_model_path);
     m_eval_func = pybind_handler::get_method(model_obj, eval_method.c_str());
-
 }
 
 ContactDetector::~ContactDetector()
 {
-
 }
 
-bool ContactDetector::is_dual(){
-    return m_is_dual;
-}
-
-
-std::vector<double> ContactDetector::evaluate(const std::string &file){
+double ContactDetector::evaluate(const std::string &file){
     try{
-        return m_eval_func(file).cast<std::vector<double>>();
+        return m_eval_func(file).cast<double>();
     }catch(py::error_already_set &e){
         if(e.matches(PyExc_FileNotFoundError)){
             throw std::runtime_error("ERROR: Image " + file + " could not be found.");

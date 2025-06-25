@@ -1,2 +1,4 @@
 build/
-.idea
+config/models/
+.vscode/
+**/__pycache__

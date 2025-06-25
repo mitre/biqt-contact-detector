@@ -1,1 +1,0 @@
-From http://www.ee.oulu.fi/~jkannala/bsif/bsif.html

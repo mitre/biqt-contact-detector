@@ -62,10 +62,10 @@ file(GLOB SOURCE_FILES "src/cxx/*.cpp")
 # Determine if the cosmetic file named COSMETIC_LENS_MODEL_FILE has already been retrieved and placed into the source directory. If it hasn't,
 # retrieve it from the web.
 #   LOCAL_COSMETIC_LENS_MODEL_PATH        The path to a model file that should be installed.
-#   TARGET_COSMETIC_LENS_MODEL_FILE_NAME  The name of the model expected by the provider (e.g., binary-cosmetic-contact-lens-model.hdf5).
+#   TARGET_COSMETIC_LENS_MODEL_FILE_NAME  The name of the model expected by the provider (e.g., efficientnet-v2l-CDM.ckpt).
 #   TARGET_COSMETIC_LENS_MODEL_PATH       The expected location of the model file within the source tree.
 #   TARGET_COSMETIC_LENS_MODEL_FILE_PATH  The combination of the TARGET_COSMETIC_LENS_MODEL_PATH and TARGET_COSMETIC_LENS_MODEL_FILE_NAME.
-set(TARGET_COSMETIC_LENS_MODEL_FILE_NAME "binary-cosmetic-contact-lens-model.hdf5")
+set(TARGET_COSMETIC_LENS_MODEL_FILE_NAME "efficientnet-v2l-CDM.ckpt")
 set(TARGET_COSMETIC_LENS_MODEL_PATH      "${CMAKE_CURRENT_SOURCE_DIR}/config/models/")
 set(TARGET_COSMETIC_LENS_MODEL_FILE_PATH "${TARGET_COSMETIC_LENS_MODEL_PATH}/${TARGET_COSMETIC_LENS_MODEL_FILE_NAME}")
 set(LOCAL_COSMETIC_LENS_MODEL_PATH       "${TARGET_COSMETIC_LENS_MODEL_FILE_PATH}" CACHE FILEPATH "The path to a model file that should be installed.")
@@ -81,7 +81,7 @@ else()
 endif()
 
 if(DOWNLOAD_MODELS)
-	set(REMOTE_COSMETIC_MODEL_URL "https://github.com/mitre/biqt-contact-detector/releases/download/v23.04/efficientnet-b5-CosmeticLensNetwork.hdf5")
+	set(REMOTE_COSMETIC_MODEL_URL "https://github.com/mitre/biqt-contact-detector/releases/download/v24.11/efficientnet-v2l-CDM.ckpt")
 	file(DOWNLOAD "${REMOTE_COSMETIC_MODEL_URL}" "${TARGET_COSMETIC_LENS_MODEL_FILE_PATH}" SHOW_PROGRESS STATUS DOWNLOAD_STATUS_COSMETIC_MODEL)
 	list(GET DOWNLOAD_STATUS_COSMETIC_MODEL 0 DOWNLOAD_FAILED)
 	if(DOWNLOAD_FAILED)
@@ -89,7 +89,6 @@ if(DOWNLOAD_MODELS)
 	endif()
 endif()
 
-add_compile_definitions(IS_DUAL_NETWORK=false)
 add_library(BIQTContactDetector SHARED ${SOURCE_FILES} ${EXTRA_FILES})
 
 # numpy likes to have the libpython3 library loaded when being called from cxx.
